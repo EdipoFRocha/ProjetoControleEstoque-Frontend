@@ -1,29 +1,21 @@
-// src/components/PrivateRoute.jsx
-import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { getMe } from "@/api/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function PrivateRoute({ children }) {
-    const [state, setState] = useState({ loading: true, ok: false, user: null });
+    const { loading, user } = useAuth();
     const location = useLocation();
 
-    useEffect(() => {
-        let alive = true;
-        (async () => {
-            try {
-                const me = await getMe();
-                if (alive) setState({ loading: false, ok: true, user: me?.data ?? me });
-            } catch {
-                if (alive) setState({ loading: false, ok: false, user: null });
-            }
-        })();
-        return () => {
-            alive = false;
-        };
-    }, []);
+    if (loading) {
+        return (
+            <div className="p-4 text-sm text-slate-500">
+                Verificando sessão…
+            </div>
+        );
+    }
 
-    if (state.loading) return <div className="p-4">Verificando sessão…</div>;
-    if (!state.ok) return <Navigate to="/login" replace state={{ from: location }} />;
+    if (!user) {
+        return <Navigate to="/login" replace state={{ from: location }} />;
+    }
 
     return children;
 }

@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 
 export function Select({ onValueChange, defaultValue, children }) {
-    // extrai SelectItem mesmo se estiverem dentro de <SelectContent>
     const items = useMemo(() => {
         const flat = [];
         const walk = (nodes) => {
@@ -34,7 +33,6 @@ export function Select({ onValueChange, defaultValue, children }) {
     );
 }
 
-// wrappers “no-op” para compatibilidade com o seu JSX
 export function SelectTrigger({ children }) { return <>{children}</>; }
 export function SelectValue({ children, placeholder }) { return <span>{children || placeholder}</span>; }
 export function SelectContent({ children }) { return <>{children}</>; }

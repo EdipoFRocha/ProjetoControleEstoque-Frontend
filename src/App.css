@@ -1,8 +1,21 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  text-align: initial;
+}
+
+.print-only {
+  display: none;
 }
 
 .logo {
@@ -39,4 +52,114 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* =========================
+   PRINT
+   ========================= */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  @media print {
+    header,
+    footer,
+    nav {
+      display: none !important;
+    }
+  }
+
+  @media print {
+    tr {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    thead {
+      display: table-header-group;
+    }
+  }
+
+  @media print {
+    #root {
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      text-align: left !important;
+    }
+    body {
+      margin: 0 !important;
+    }
+  }
+
+  @media print {
+    .print-card {
+      width: 100% !important;
+    }
+  }
+
+  /* RESET geral */
+  html,
+  body {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  #root {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+  }
+
+  /* Mostrar só o documento de impressão */
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+
+  /* Evita toast na impressão (react-hot-toast) */
+  [data-hot-toast-container],
+  .react-hot-toast {
+    display: none !important;
+  }
+
+  /* Cores e backgrounds */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Tabela: header repete por página */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  tr,
+  td,
+  th {
+    page-break-inside: avoid;
+  }
+
+  /* Documento impresso */
+  .print-card {
+    border: 1px solid #111 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
 }

@@ -1,5 +1,5 @@
-// src/api/api.js
 import axios from "axios";
+import { emitUnauthorized } from "@/api/authEvents";
 
 // Base URL (ENV ou fallback)
 const baseURL = import.meta.env.VITE_API_BASE_URL || "/api";
@@ -30,39 +30,24 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// ====================================================================
 // REFRESH AUTOMÁTICO DO JWT (só tenta 1x por requisição)
 let isRefreshing = false;
 
 api.interceptors.response.use(
-    (res) => res,
-    async (err) => {
-        const status = err?.response?.status;
-        const original = err?.config;
+  (res) => res,
+  (err) => {
+    const status = err?.response?.status;
+    const url = err?.config?.url;
 
-        // Se 401 (token expirado) e ainda não tentamos refresh
-        if (status === 401 && !original?._retry) {
-            original._retry = true;
-            if (!isRefreshing) {
-                isRefreshing = true;
-                try {
-                    await api.post("/auth/refresh"); // backend usa cookie HttpOnly REFRESH_TOKEN
-                } catch (e) {
-                    console.warn("Refresh token falhou:", e?.response?.status);
-                    isRefreshing = false;
-                    return Promise.reject(err);
-                }
-                isRefreshing = false;
-            }
-            // refaz a request original
-            return api.request(original);
-        }
+    console.error("API error:", status, url);
 
-        console.error("API error:", status, err?.config?.url);
-        return Promise.reject(err);
+    if (status === 401) {
+      emitUnauthorized();
     }
+
+    return Promise.reject(err);
+  }
 );
-// ====================================================================
 
 // ===== Helpers =====
 export function extractApiError(err) {
@@ -96,3 +81,20 @@ export const postTransferByCode = (payload) => api.post("/operations/transfers/b
 // ===== Recebimento / Venda =====
 export const postReceipt = (payload) => api.post("/receipts", payload);
 export const postSale = (payload) => api.post("/sales", payload);
+
+// ===== Users (Admin) =====
+export const listUsers = (companyId) =>
+  api.get("/admin/users", { params: companyId ? { companyId } : {} });
+
+export const createUser = (payload) => api.post("/admin/users", payload);
+
+export const toggleUserActive = (id, companyId) =>
+  api.patch(`/admin/users/${id}/toggle-active`, null, {
+    params: companyId ? { companyId } : {},
+  });
+
+// ===== Companies (Admin) =====
+export const listCompanies = () => api.get("/companies");
+export const createCompany = (payload) => api.post("/companies", payload);
+export const setCompanyActive = (id, value) =>
+  api.patch(`/companies/${id}/active?value=${value}`);

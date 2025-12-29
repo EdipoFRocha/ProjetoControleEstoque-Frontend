@@ -1,4 +1,3 @@
-// src/components/ui/HelpTip.jsx
 import { useId } from "react";
 
 export default function HelpTip({ text, className = "" }) {
