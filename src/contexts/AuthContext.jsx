@@ -1,10 +1,18 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { getMe, logout as apiLogout, login as apiLogin } from "@/api/api";
+import { AUTH_EVENTS, resetUnauthorized } from "@/api/authEvents";
 
 const AuthCtx = createContext(null);
 
 export function AuthProvider({ children }) {
   const [state, setState] = useState({ loading: true, user: null });
+
+  const signOut = useCallback(async () => {
+    try {
+      await apiLogout();
+    } catch {}
+    setState({ loading: false, user: null });
+  }, []);
 
   const reload = useCallback(async () => {
     try {
@@ -21,29 +29,38 @@ export function AuthProvider({ children }) {
     reload();
   }, [reload]);
 
+  useEffect(() => {
+    const onUnauthorized = async () => {
+      await signOut();
+    };
+
+    window.addEventListener(AUTH_EVENTS.UNAUTHORIZED, onUnauthorized);
+    return () =>
+      window.removeEventListener(AUTH_EVENTS.UNAUTHORIZED, onUnauthorized);
+  }, [signOut]);
+
   const signIn = async (username, password) => {
-    // Faz login no backend (seta cookie/JWT no httpOnly, etc.)
     await apiLogin({ username, password });
 
-    // Depois do login, busca /me e atualiza estado
     const me = await reload();
-
     if (!me) {
       throw new Error("Falha ao autenticar. Tente novamente.");
     }
 
+    resetUnauthorized();
     return me;
   };
 
-  const signOut = async () => {
-    try {
-      await apiLogout();
-    } catch {}
-    setState({ loading: false, user: null });
-  };
-
   return (
-    <AuthCtx.Provider value={{ ...state, reload, signIn, signOut }}>
+    <AuthCtx.Provider
+      value={{
+        loading: state.loading,
+        user: state.user,
+        reload,
+        signIn,
+        signOut,
+      }}
+    >
       {children}
     </AuthCtx.Provider>
   );
