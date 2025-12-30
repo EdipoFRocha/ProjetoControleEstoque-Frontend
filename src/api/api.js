@@ -37,11 +37,11 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     const status = err?.response?.status;
-    const url = err?.config?.url;
+    const url = err?.config?.url || "";
 
     console.error("API error:", status, url);
 
-    if (status === 401) {
+    if (status === 401 && !url.includes("/auth/me")) {
       emitUnauthorized();
     }
 
