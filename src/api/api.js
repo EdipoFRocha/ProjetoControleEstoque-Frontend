@@ -35,17 +35,14 @@ let isRefreshing = false;
 
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
-    const status = err?.response?.status;
-    const url = err?.config?.url || "";
+  (error) => {
+    const status = error?.response?.status;
 
-    console.error("API error:", status, url);
-
-    if (status === 401 && !url.includes("/auth/me")) {
+    if (status === 401 || status === 403) {
       emitUnauthorized();
     }
 
-    return Promise.reject(err);
+    return Promise.reject(error);
   }
 );
 
